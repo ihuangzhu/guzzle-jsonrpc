@@ -14,51 +14,8 @@
 
 namespace Graze\GuzzleHttp\JsonRpc\Exception;
 
-use Exception;
-use Graze\GuzzleHttp\JsonRpc\Message\RequestInterface;
-use Graze\GuzzleHttp\JsonRpc\Message\ResponseInterface;
 use GuzzleHttp\Exception\RequestException as HttpRequestException;
-use Psr\Http\Message\RequestInterface as HttpRequestInterface;
-use Psr\Http\Message\ResponseInterface as HttpResponseInterface;
 
 class RequestException extends HttpRequestException
 {
-    /**
-     * {@inheritdoc}
-     *
-     * @param HttpRequestInterface       $request        Request
-     * @param HttpResponseInterface|null $response       Response received
-     * @param \Exception|null            $previous       Previous exception
-     * @param array|null                 $handlerContext Optional handler context.
-     *
-     * @return HttpRequestException
-     */
-    public static function create(
-        HttpRequestInterface $request,
-        HttpResponseInterface $response = null,
-        Exception $previous = null,
-        array $handlerContext = null
-    ) {
-        if ($request instanceof RequestInterface && $response instanceof ResponseInterface) {
-            static $clientErrorCodes = [-32600, -32601, -32602, -32700];
-
-            $errorCode = $response->getRpcErrorCode();
-            if (in_array($errorCode, $clientErrorCodes)) {
-                $label = 'Client RPC error response';
-                $className = ClientException::class;
-            } else {
-                $label = 'Server RPC error response';
-                $className = ServerException::class;
-            }
-
-            $message = $label . ' [uri] ' . $request->getRequestTarget()
-                . ' [method] ' . $request->getRpcMethod()
-                . ' [error code] ' . $errorCode
-                . ' [error message] ' . $response->getRpcErrorMessage();
-
-            return new $className($message, $request, $response, $previous);
-        }
-
-        return parent::create($request, $response, $previous);
-    }
 }
